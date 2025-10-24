@@ -38,7 +38,8 @@ typedef struct {
 
 static bool write_to_bmp(const char *fname, const uint8_t data[])
 {
-	int size = qrcodegen_getSize(data);
+	const int scale = 10;
+	int size = qrcodegen_getSize(data) * scale;
 
 	int block = ((size + 31) / 32) * 4;
 	int bytes = block * size;
@@ -66,13 +67,16 @@ static bool write_to_bmp(const char *fname, const uint8_t data[])
 
 	for (int y = size - 1; y >= 0; y--) {
 		memset(ln, 0x00, (size_t)block);
+		int _y = y / scale;
 
 		for (int x = 0; x < size; x++) {
-			if (qrcodegen_getModule(data, x, y)) {
-				int idx = x / 8;
-				int idy = 7 - (x % 8);
+			int _x = x / scale;
 
-				ln[idx] |= (1 << idy);
+			if (qrcodegen_getModule(data, _x, _y)) {
+				int a = x / 8;
+				int b = 7 - (x % 8);
+
+				ln[a] |= (1 << b);
 			}
 		}
 
