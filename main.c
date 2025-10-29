@@ -61,7 +61,7 @@ static bool write_to_bmp(const char *fname, const uint8_t data[])
 	fwrite(&ih, sizeof(ih), 1, fp);
 	fwrite(pal, sizeof(pal), 1, fp);
 
-	uint8_t *ln = calloc(block, 1);
+	uint8_t *ln = malloc((size_t)block);
 	if (!ln) {
 		fclose(fp);
 		return false;
@@ -73,16 +73,13 @@ static bool write_to_bmp(const char *fname, const uint8_t data[])
 		if (y >= border && y < size - border) {
 			int _y = (y - border) / scale;
 
-			for (int x = 0; x < size; x++) {
-				if (x >= border && x < size - border) {
-					int _x = (x - border) / scale;
+			for (int x = border; x < size - border; x++) {
+				int _x = (x - border) / scale;
 
-					if (qrcodegen_getModule(data, _x, _y)) {
-						int a = x / 8;
-						int b = 7 - (x % 8);
-
-						ln[a] |= (1 << b);
-					}
+				if (qrcodegen_getModule(data, _x, _y)) {
+					int a = x / 8;
+					int b = 7 - (x % 8);
+					ln[a] |= (1 << b);
 				}
 			}
 		}
