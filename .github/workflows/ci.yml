@@ -1,0 +1,31 @@
+name: build
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: robinraju/release-downloader@v1
+        with:
+          repository: 'brechtsanders/winlibs_mingw'
+          tag: '10.5.0-11.0.1-msvcrt-r2'
+          fileName: 'winlibs-i686-posix-dwarf-gcc-10.5.0-mingw-w64msvcrt-11.0.1-r2.zip'
+          extract: true
+
+      - run: mingw32/bin/gcc.exe -std=c99 -O2 -static -m32 "-Wl,--subsystem,console:5.01" main.c lib/qrcodegen.c -o qrcode_x86_win-xp.exe
+
+      - uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          files: qrcode_x86_win-xp.exe
